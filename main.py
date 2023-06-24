@@ -29,6 +29,25 @@ def drawgrid(display):
         pygame.draw.line(display, (0, 0, 0), (-80+globaloffset[0]%40, i*40+globaloffset[1]%40), (880+globaloffset[0]%40, i*40+globaloffset[1]%40))
 
 
+def find_five_pieces(pieces):
+    rows = {}
+    cols = {}
+    diags = {}
+    for x, y, color in pieces:
+        rows.setdefault(x, []).append((x, y, color))
+        cols.setdefault(y, []).append((x, y, color))
+        diags.setdefault(x + y, []).append((x, y, color))
+        diags.setdefault(x - y, []).append((x, y, color))
+    for d in rows, cols, diags:
+        for k in d:
+            if len(d[k]) >= 5:
+                for i in range(len(d[k]) - 4):
+                    if all(c == d[k][i][2] for _, _, c in d[k][i:i+5]):
+                        return d[k][i:i+5]
+    return None
+
+
+
 def game(online=False, roomcode=None, color='r'): #r, b; red moves first
     pygame.init()
     global crossmove, poss
@@ -48,6 +67,7 @@ def game(online=False, roomcode=None, color='r'): #r, b; red moves first
                 if not([(pos[0]-globaloffset[0])//40, (pos[1]-globaloffset[1])//40, crossmove] in poss or [(pos[0]-globaloffset[0])//40, (pos[1]-globaloffset[1])//40, not crossmove] in poss):
                     poss.append([(pos[0]-globaloffset[0])//40, (pos[1]-globaloffset[1])//40, crossmove])
                     crossmove = not crossmove
+                    print(find_five_pieces(poss))
         
             
         keyspressed = pygame.key.get_pressed()
